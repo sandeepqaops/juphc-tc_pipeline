@@ -1,14 +1,15 @@
 apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:  
-  name: juphc-tc-pipeline
+  name: tc-pipeline
 spec:
   workspaces:
     - name: pipeline-workspace
     - name: dockerconfig-ws
   params:
-    - name: build-image
     - name: repo-url
+    - name: app-name
+      default: tax-calculator
     - name: branch
       default: main
   tasks:
@@ -33,7 +34,7 @@ spec:
       - name: revision
         value: $(params.branch)
       runAfter:
-        - init
+        - init      
     - name: npminstall
       workspaces:
         - name: source
@@ -54,6 +55,8 @@ spec:
       workspaces:
         - name: source
           workspace: pipeline-workspace
+        - name: dockerconfig
+          workspace: dockerconfig-ws
       taskRef:
         name: buildah
         kind: ClusterTask
@@ -62,7 +65,3 @@ spec:
         value: "us.icr.io/$(context.pipelineRun.namespace)/$(params.app-name)"
       runAfter:
         - tests
-
-
-    
-
